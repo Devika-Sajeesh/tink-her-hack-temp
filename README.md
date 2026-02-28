@@ -1,28 +1,27 @@
 <p align="center">
-  <img src="./img.png" alt="Project Banner" width="100%">
+  <img src="./img.png" alt="Fitr Banner" width="100%">
 </p>
 
-# [Project Name] 🎯
+# Fitr ◈ — Internship Fit Intelligence Engine 🎯
 
 ## Basic Details
 
-### Team Name: [Name]
+### Team Name: Fitr
 
 ### Team Members
-- Member 1: [Name] - [College]
-- Member 2: [Name] - [College]
+- Member 1: Devika Sajeesh - College of Engineering Trivandrum
 
 ### Hosted Project Link
-[mention your project hosted link here]
+[https://devika-sajeesh.github.io/Fitr](https://devika-sajeesh.github.io/Fitr)
 
 ### Project Description
-[2-3 lines about what your project does]
+Fitr is an AI-powered internship fit engine that reads your GitHub repositories like a senior engineer would, deconstructs job descriptions like a hiring manager would, and tells you exactly how qualified you are — and how to close the gap. It also flags fake and scam internship postings before you waste time applying.
 
-### The Problem statement
-[What problem are you solving?]
+### The Problem Statement
+Students apply to internships on platforms like Internshala, LinkedIn, and Unstop every day and get rejected — not because they aren't qualified, but because keyword-based matching systems can't see their real skills. A student with 25 Python projects gets rejected for missing one buzzword. Meanwhile, scam internships asking for registration fees look identical to legitimate ones. There is no tool that reads what you've actually built and tells you honestly where you stand.
 
 ### The Solution
-[How are you solving it?]
+Fitr runs a 4-stage AI pipeline: it scrapes your public GitHub repositories to build a real competency map from your actual code, then uses a Groq-powered LLM to deconstruct the job description into hard requirements and nice-to-haves, scores your fit using a weighted formula that prioritises hard skill matches, detects scam red flags, and generates a personalised cover letter that cites your actual projects and addresses your skill gaps constructively.
 
 ---
 
@@ -31,25 +30,20 @@
 ### Technologies/Components Used
 
 **For Software:**
-- Languages used: [e.g., JavaScript, Python, Java]
-- Frameworks used: [e.g., React, Django, Spring Boot]
-- Libraries used: [e.g., axios, pandas, JUnit]
-- Tools used: [e.g., VS Code, Git, Docker]
-
-**For Hardware:**
-- Main components: [List main components]
-- Specifications: [Technical specifications]
-- Tools required: [List tools needed]
+- Languages used: Python, JavaScript, HTML, CSS
+- Frameworks used: FastAPI, TailwindCSS
+- Libraries used: PyGithub, LangChain, langchain-groq, python-dotenv, uvicorn
+- Tools used: Groq LPU Inference Engine (Llama 3.3 70B), Git, GitHub Pages, Render
 
 ---
 
 ## Features
 
-List the key features of your project:
-- Feature 1: [Description]
-- Feature 2: [Description]
-- Feature 3: [Description]
-- Feature 4: [Description]
+- **GitHub-Native Skill Inference:** Analyses your actual repositories using language stats and dependency files — not your self-reported resume skills
+- **Intelligent JD Deconstruction:** LLM separates hard requirements from nice-to-haves and identifies skills learnable in under 2 weeks
+- **Weighted Fit Scoring:** Composite score (hard match 60% + soft match 25% + legitimacy 15%) with a clear YES / BORDERLINE / NO recommendation
+- **Scam Detection:** Rule-based red flag engine checks for registration fees, vague deliverables, unpaid mandatory work, and 9 other patterns with a legitimacy score out of 100
+- **Personalised Cover Letter:** Groq LLM generates a 150-word cover letter citing your specific GitHub projects and addressing skill gaps proactively
 
 ---
 
@@ -59,21 +53,29 @@ List the key features of your project:
 
 #### Installation
 ```bash
-[Installation commands - e.g., npm install, pip install -r requirements.txt]
+git clone https://github.com/Devika-Sajeesh/Fitr.git
+cd Fitr
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
 ```
+
+Create a `.env` file in the root directory:
+```
+GITHUB_TOKEN=your_github_personal_access_token
+GROQ_API_KEY=your_groq_api_key
+```
+
+Get your keys:
+- GitHub token: github.com/settings/tokens → Generate classic token → check `public_repo`
+- Groq API key: console.groq.com → API Keys → Create key (free, no credit card)
 
 #### Run
 ```bash
-[Run commands - e.g., npm start, python app.py]
+uvicorn main:app --reload
 ```
 
-### For Hardware:
-
-#### Components Required
-[List all components needed with specifications]
-
-#### Circuit Setup
-[Explain how to set up the circuit]
+Open `frontend/index.html` in your browser. The frontend calls the FastAPI backend at `http://localhost:8000`.
 
 ---
 
@@ -83,338 +85,219 @@ List the key features of your project:
 
 #### Screenshots (Add at least 3)
 
-![Screenshot1](Add screenshot 1 here with proper name)
-*Add caption explaining what this shows*
+![Screenshot1](assets/Screenshot1.png)
 
-![Screenshot2](Add screenshot 2 here with proper name)
-*Add caption explaining what this shows*
+![Screenshot2](assets/Screenshot2.png)
 
-![Screenshot3](Add screenshot 3 here with proper name)
-*Add caption explaining what this shows*
+![Screenshot3](assets/Screenshot3.png)
 
 #### Diagrams
 
 **System Architecture:**
 
-![Architecture Diagram](docs/architecture.png)
-*Explain your system architecture - components, data flow, tech stack interaction*
+```
+GitHub URL + JD Text
+        │
+        ▼
+┌───────────────────┐
+│  Stage 1          │
+│  GitHub Ingestor  │ ← PyGithub API
+│  (Competency Map) │
+└────────┬──────────┘
+         │
+         ▼
+┌───────────────────┐
+│  Stage 2          │
+│  JD Analyser      │ ← Groq LLM (Llama 3.3 70B)
+│  + Red Flag Check │
+└────────┬──────────┘
+         │
+         ▼
+┌───────────────────┐
+│  Stage 3          │
+│  Fit Scorer       │ ← Weighted formula
+│  (0–100 score)    │
+└────────┬──────────┘
+         │
+         ▼
+┌───────────────────┐
+│  Stage 4          │
+│  Cover Letter     │ ← Groq LLM (Llama 3.3 70B)
+│  Agent            │
+└────────┬──────────┘
+         │
+         ▼
+    Results Dashboard
+```
 
-**Application Workflow:**
+**Fit Scoring Formula:**
+```
+hard_match  = (matched hard skills / total hard skills) × 60
+soft_match  = (matched nice-to-haves / total nice-to-haves) × 25
+legitimacy  = legitimacy_score × 0.15
 
-![Workflow](docs/workflow.png)
-*Add caption explaining your workflow*
-
----
-
-### For Hardware:
-
-#### Schematic & Circuit
-
-![Circuit](Add your circuit diagram here)
-*Add caption explaining connections*
-
-![Schematic](Add your schematic diagram here)
-*Add caption explaining the schematic*
-
-#### Build Photos
-
-![Team](Add photo of your team here)
-
-![Components](Add photo of your components here)
-*List out all components shown*
-
-![Build](Add photos of build process here)
-*Explain the build steps*
-
-![Final](Add photo of final product here)
-*Explain the final build*
+final_score = hard_match + soft_match + legitimacy  (max 100)
+```
 
 ---
 
 ## Additional Documentation
 
-### For Web Projects with Backend:
+### API Documentation
 
-#### API Documentation
+**Base URL:** `http://localhost:8000`
 
-**Base URL:** `https://api.yourproject.com`
+---
 
-##### Endpoints
-
-**GET /api/endpoint**
-- **Description:** [What it does]
-- **Parameters:**
-  - `param1` (string): [Description]
-  - `param2` (integer): [Description]
-- **Response:**
-```json
-{
-  "status": "success",
-  "data": {}
-}
-```
-
-**POST /api/endpoint**
-- **Description:** [What it does]
+**POST /ingest**
+- **Description:** Scrapes a GitHub profile and returns a competency map of inferred skills
 - **Request Body:**
 ```json
 {
-  "field1": "value1",
-  "field2": "value2"
+  "github_url": "https://github.com/username"
 }
 ```
 - **Response:**
 ```json
 {
-  "status": "success",
-  "message": "Operation completed"
-}
-```
-
-[Add more endpoints as needed...]
-
----
-
-### For Mobile Apps:
-
-#### App Flow Diagram
-
-![App Flow](docs/app-flow.png)
-*Explain the user flow through your application*
-
-#### Installation Guide
-
-**For Android (APK):**
-1. Download the APK from [Release Link]
-2. Enable "Install from Unknown Sources" in your device settings:
-   - Go to Settings > Security
-   - Enable "Unknown Sources"
-3. Open the downloaded APK file
-4. Follow the installation prompts
-5. Open the app and enjoy!
-
-**For iOS (IPA) - TestFlight:**
-1. Download TestFlight from the App Store
-2. Open this TestFlight link: [Your TestFlight Link]
-3. Click "Install" or "Accept"
-4. Wait for the app to install
-5. Open the app from your home screen
-
-**Building from Source:**
-```bash
-# For Android
-flutter build apk
-# or
-./gradlew assembleDebug
-
-# For iOS
-flutter build ios
-# or
-xcodebuild -workspace App.xcworkspace -scheme App -configuration Debug
-```
-
----
-
-### For Hardware Projects:
-
-#### Bill of Materials (BOM)
-
-| Component | Quantity | Specifications | Price | Link/Source |
-|-----------|----------|----------------|-------|-------------|
-| Arduino Uno | 1 | ATmega328P, 16MHz | ₹450 | [Link] |
-| LED | 5 | Red, 5mm, 20mA | ₹5 each | [Link] |
-| Resistor | 5 | 220Ω, 1/4W | ₹1 each | [Link] |
-| Breadboard | 1 | 830 points | ₹100 | [Link] |
-| Jumper Wires | 20 | Male-to-Male | ₹50 | [Link] |
-| [Add more...] | | | | |
-
-**Total Estimated Cost:** ₹[Amount]
-
-#### Assembly Instructions
-
-**Step 1: Prepare Components**
-1. Gather all components listed in the BOM
-2. Check component specifications
-3. Prepare your workspace
-![Step 1](images/assembly-step1.jpg)
-*Caption: All components laid out*
-
-**Step 2: Build the Power Supply**
-1. Connect the power rails on the breadboard
-2. Connect Arduino 5V to breadboard positive rail
-3. Connect Arduino GND to breadboard negative rail
-![Step 2](images/assembly-step2.jpg)
-*Caption: Power connections completed*
-
-**Step 3: Add Components**
-1. Place LEDs on breadboard
-2. Connect resistors in series with LEDs
-3. Connect LED cathodes to GND
-4. Connect LED anodes to Arduino digital pins (2-6)
-![Step 3](images/assembly-step3.jpg)
-*Caption: LED circuit assembled*
-
-**Step 4: [Continue for all steps...]**
-
-**Final Assembly:**
-![Final Build](images/final-build.jpg)
-*Caption: Completed project ready for testing*
-
----
-
-### For Scripts/CLI Tools:
-
-#### Command Reference
-
-**Basic Usage:**
-```bash
-python script.py [options] [arguments]
-```
-
-**Available Commands:**
-- `command1 [args]` - Description of what command1 does
-- `command2 [args]` - Description of what command2 does
-- `command3 [args]` - Description of what command3 does
-
-**Options:**
-- `-h, --help` - Show help message and exit
-- `-v, --verbose` - Enable verbose output
-- `-o, --output FILE` - Specify output file path
-- `-c, --config FILE` - Specify configuration file
-- `--version` - Show version information
-
-**Examples:**
-
-```bash
-# Example 1: Basic usage
-python script.py input.txt
-
-# Example 2: With verbose output
-python script.py -v input.txt
-
-# Example 3: Specify output file
-python script.py -o output.txt input.txt
-
-# Example 4: Using configuration
-python script.py -c config.json --verbose input.txt
-```
-
-#### Demo Output
-
-**Example 1: Basic Processing**
-
-**Input:**
-```
-This is a sample input file
-with multiple lines of text
-for demonstration purposes
-```
-
-**Command:**
-```bash
-python script.py sample.txt
-```
-
-**Output:**
-```
-Processing: sample.txt
-Lines processed: 3
-Characters counted: 86
-Status: Success
-Output saved to: output.txt
-```
-
-**Example 2: Advanced Usage**
-
-**Input:**
-```json
-{
-  "name": "test",
-  "value": 123
-}
-```
-
-**Command:**
-```bash
-python script.py -v --format json data.json
-```
-
-**Output:**
-```
-[VERBOSE] Loading configuration...
-[VERBOSE] Parsing JSON input...
-[VERBOSE] Processing data...
-{
-  "status": "success",
-  "processed": true,
-  "result": {
-    "name": "test",
-    "value": 123,
-    "timestamp": "2024-02-07T10:30:00"
+  "competency_map": {
+    "Python": 0.91,
+    "nlp": 0.78,
+    "backend": 0.82,
+    "deep-learning": 0.65
   }
 }
-[VERBOSE] Operation completed in 0.23s
 ```
+
+---
+
+**POST /analyse**
+- **Description:** Parses a job description using LLM and runs red flag detection
+- **Request Body:**
+```json
+{
+  "jd_text": "We are looking for a Python developer with FastAPI experience..."
+}
+```
+- **Response:**
+```json
+{
+  "hard_skills": ["Python", "FastAPI", "REST APIs"],
+  "nice_to_have": ["Docker", "AWS"],
+  "role_summary": "Backend Python developer internship",
+  "stipend": "₹15,000/month",
+  "red_flags": [],
+  "legitimacy_score": 100
+}
+```
+
+---
+
+**POST /fit**
+- **Description:** Calculates fit score from competency map and JD analysis
+- **Request Body:**
+```json
+{
+  "competency_map": {"Python": 0.91, "backend": 0.82},
+  "jd_analysis": {"hard_skills": ["Python", "FastAPI"], "nice_to_have": ["Docker"], "legitimacy_score": 100}
+}
+```
+- **Response:**
+```json
+{
+  "fit_score": 78,
+  "hard_matched": ["Python", "FastAPI"],
+  "hard_missing": ["Docker"],
+  "soft_matched": [],
+  "recommendation": "YES — Apply with confidence",
+  "legitimacy_score": 100
+}
+```
+
+---
+
+**POST /full-analysis**
+- **Description:** Runs all 4 stages in sequence and returns the complete result including cover letter
+- **Request Body:**
+```json
+{
+  "github_url": "https://github.com/username",
+  "jd_text": "Full job description text here..."
+}
+```
+- **Response:**
+```json
+{
+  "competency_map": {},
+  "jd_analysis": {},
+  "fit_result": {
+    "fit_score": 78,
+    "hard_matched": ["Python", "LLM"],
+    "hard_missing": ["Kubernetes"],
+    "recommendation": "YES — Apply with confidence",
+    "legitimacy_score": 95
+  },
+  "cover_letter": "I'm excited to apply..."
+}
+```
+
+---
+
+**POST /demo**
+- **Description:** Returns a hardcoded realistic demo response — use this if API keys are unavailable
+- **Request Body:** None required
+- **Response:** Full analysis result for a sample Python/ML developer profile
 
 ---
 
 ## Project Demo
 
 ### Video
-[Add your demo video link here - YouTube, Google Drive, etc.]
-
-*Explain what the video demonstrates - key features, user flow, technical highlights*
+[\[demo video link \]](https://www.loom.com/share/1f1ac03d824b4da3b98e8827e4e59b3e)
 
 ### Additional Demos
-[Add any extra demo materials/links - Live site, APK download, online demo, etc.]
+- Live site: [https://devika-sajeesh.github.io/Fitr](https://devika-sajeesh.github.io/Fitr)
+- Backend API docs: `http://localhost:8000/docs` (run locally)
 
 ---
 
-## AI Tools Used (Optional - For Transparency Bonus)
+## AI Tools Used
 
-If you used AI tools during development, document them here for transparency:
+**Tool Used:** Claude (Anthropic), Groq (Llama 3.3 70B)
 
-**Tool Used:** [e.g., GitHub Copilot, v0.dev, Cursor, ChatGPT, Claude]
-
-**Purpose:** [What you used it for]
-- Example: "Generated boilerplate React components"
-- Example: "Debugging assistance for async functions"
-- Example: "Code review and optimization suggestions"
+**Purpose:**
+- Claude: Architecture planning, code generation for all 4 pipeline stages, debugging assistance, prompt engineering for JD parser and cover letter agent
+- Groq / Llama 3.3 70B: Runtime LLM for JD deconstruction and cover letter generation within the app itself
 
 **Key Prompts Used:**
-- "Create a REST API endpoint for user authentication"
-- "Debug this async function that's causing race conditions"
-- "Optimize this database query for better performance"
+- "Write a Python function get_competency_map(github_url) using PyGithub that infers skills from repo language stats and requirements.txt"
+- "Create a LangChain chain that parses a job description into structured JSON with hard_skills, nice_to_have, and role_summary"
+- "Fix the scoring formula to weight hard skill matches at 60%, soft matches at 25%, legitimacy at 15%"
+- "Generate a FastAPI app with CORS middleware and 5 POST routes for a 4-stage internship fit pipeline"
 
-**Percentage of AI-generated code:** [Approximately X%]
+**Percentage of AI-generated code:** ~60%
 
 **Human Contributions:**
-- Architecture design and planning
-- Custom business logic implementation
-- Integration and testing
-- UI/UX design decisions
-
-*Note: Proper documentation of AI usage demonstrates transparency and earns bonus points in evaluation!*
+- Problem identification from personal experience with internship rejections
+- System architecture and pipeline design decisions
+- Skill taxonomy JSON (manual curation of 40+ library → skill mappings)
+- Red flag keyword list (domain knowledge of internship scam patterns)
+- Fit scoring formula design and weightings
+- Integration, testing, debugging across all stages
+- UI/UX design decisions and frontend flow
 
 ---
 
 ## Team Contributions
 
-- [Name 1]: [Specific contributions - e.g., Frontend development, API integration, etc.]
-- [Name 2]: [Specific contributions - e.g., Backend development, Database design, etc.]
-- [Name 3]: [Specific contributions - e.g., UI/UX design, Testing, Documentation, etc.]
+- Devika Sajeesh: Full stack — system architecture, GitHub ingestor, JD analyser, fit scorer, cover letter agent, FastAPI backend, frontend UI, deployment
 
 ---
 
 ## License
 
-This project is licensed under the [LICENSE_NAME] License - see the [LICENSE](LICENSE) file for details.
-
-**Common License Options:**
-- MIT License (Permissive, widely used)
-- Apache 2.0 (Permissive with patent grant)
-- GPL v3 (Copyleft, requires derivative works to be open source)
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-Made with ❤️ at TinkerHub
+Made with ❤️ at TinkerHub Tink-Her-Hack 4.0

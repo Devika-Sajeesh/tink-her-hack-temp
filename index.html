@@ -267,8 +267,18 @@
                             <h3 class="text-status-danger font-semibold flex items-center gap-2 mb-4 text-sm md:text-base">
                                 <span class="bg-status-danger/20 text-status-danger rounded-full w-5 h-5 flex items-center justify-center text-xs">✗</span> You're Missing
                             </h3>
-                            <div id="ui-hard-missing" class="flex flex-wrap gap-2">
+                            <div id="ui-hard-missing" class="flex flex-wrap gap-2 mb-4">
                                 <!-- Pills injected via JS -->
+                            </div>
+                            
+                            <!-- Quick Wins / Learnable in 2 weeks -->
+                            <div id="ui-quick-wins-container" class="hidden mt-auto border-t border-[#333] pt-4">
+                                <h4 class="text-status-warning font-semibold flex items-center gap-2 mb-3 text-xs md:text-sm tracking-wide">
+                                   <span class="bg-status-warning/20 text-status-warning rounded-full w-5 h-5 flex items-center justify-center text-[10px]">⚡</span> Quick Learn (&lt;2 weeks)
+                                </h4>
+                                <div id="ui-quick-missing" class="flex flex-wrap gap-2">
+                                    <!-- Pills injected via JS -->
+                                </div>
                             </div>
                         </div>
                         
@@ -346,6 +356,8 @@
         
         const uiHardMatched = document.getElementById('ui-hard-matched');
         const uiHardMissing = document.getElementById('ui-hard-missing');
+        const uiQuickWinsContainer = document.getElementById('ui-quick-wins-container');
+        const uiQuickMissing = document.getElementById('ui-quick-missing');
         
         const uiLegitScore = document.getElementById('ui-legit-score');
         const uiLegitBar = document.getElementById('ui-legit-bar');
@@ -609,16 +621,34 @@ Apply with your resume and portfolio. No portfolio fee required.`;
             
             // Render "You're Missing"
             uiHardMissing.innerHTML = '';
-            const missing = fit.hard_missing || [];
-            if (missing.length === 0) {
+            const quickMissing = fit.quick_learn_missing || [];
+            const missing = (fit.hard_missing || []).filter(skill => !quickMissing.includes(skill));
+            
+            if (missing.length === 0 && quickMissing.length === 0) {
                 uiHardMissing.innerHTML = '<span class="text-gray-500 text-xs italic">None! You hit all marked hard skills.</span>';
-            } else {
+            } else if (missing.length > 0) {
                 missing.forEach(skill => {
                     const span = document.createElement('span');
                     span.className = 'px-2 py-1 md:px-3 md:py-1 bg-status-danger/10 border border-status-danger/30 text-status-danger rounded-full text-[10px] md:text-xs font-mono lowercase tracking-wide';
                     span.innerText = skill;
                     uiHardMissing.appendChild(span);
                 });
+            } else {
+                 uiHardMissing.innerHTML = '<span class="text-gray-500 text-xs italic">Only quick-learn skills missing!</span>';
+            }
+            
+            // Render "Quick Learn Skills"
+            uiQuickMissing.innerHTML = '';
+            if (quickMissing.length > 0) {
+                uiQuickWinsContainer.classList.remove('hidden');
+                quickMissing.forEach(skill => {
+                    const span = document.createElement('span');
+                    span.className = 'px-2 py-1 md:px-3 md:py-1 bg-status-warning/10 border border-status-warning/30 text-status-warning rounded-full text-[10px] md:text-xs font-mono lowercase tracking-wide';
+                    span.innerText = skill;
+                    uiQuickMissing.appendChild(span);
+                });
+            } else {
+                uiQuickWinsContainer.classList.add('hidden');
             }
             
             

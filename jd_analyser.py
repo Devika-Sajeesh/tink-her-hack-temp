@@ -12,6 +12,7 @@ def analyse_jd(jd_text: str) -> dict:
     prompt_template = """You are a hiring manager. Analyse this job description and return ONLY valid JSON with these keys:
 - hard_skills: list of must-have skills (strings)
 - nice_to_have: list of preferred skills (strings)
+- quick_learn_skills: list of skills from the above requirements that a candidate could realistically learn the basics of in under 2 weeks (e.g., a specific library, a straightforward API, or basic tool, rather than an entire paradigm or language).
 - role_summary: one sentence description
 - stipend: extracted stipend or 'not mentioned'
 
@@ -57,6 +58,7 @@ Job Description: {jd_text}
 
         llm_data.setdefault("hard_skills", [])
         llm_data.setdefault("nice_to_have", [])
+        llm_data.setdefault("quick_learn_skills", [])
         llm_data.setdefault("role_summary", "")
         llm_data.setdefault("stipend", "not mentioned")
 
@@ -65,6 +67,7 @@ Job Description: {jd_text}
         llm_data = {
             "hard_skills": [],
             "nice_to_have": [],
+            "quick_learn_skills": [],
             "role_summary": "Error parsing JD",
             "stipend": "not mentioned"
         }
