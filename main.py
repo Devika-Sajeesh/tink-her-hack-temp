@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from github_ingestor import get_competency_map
 from jd_analyser import analyse_jd
 from fit_scorer import calculate_fit
+from cover_letter_generator import generate_cover_letter
 from copy import deepcopy
 from resume_parser import extract_resume_skills
 from typing import Dict, List, Any, Optional
