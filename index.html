@@ -424,7 +424,7 @@
                     formData.append('resume', resumeFile);
                 }
 
-                const response = await fetch('https://tink-her-hack-temp-1bfw.onrender.com/full-analysis', {
+                const response = await fetch('http://localhost:8000/full-analysis', {
                     method: 'POST',
                     body: formData // No Content-Type header needed for FormData
                 });

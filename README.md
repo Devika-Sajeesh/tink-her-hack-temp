@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./img.png" alt="Fitr Banner" width="100%">
+  <img src="assets/img.png" alt="Fitr Banner" width="100%">
 </p>
 
 # Fitr ◈ — Internship Fit Intelligence Engine 🎯
