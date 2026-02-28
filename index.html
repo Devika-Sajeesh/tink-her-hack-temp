@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FITR ◈ Internship Fit Engine</title>
+    
+    <!-- Google Fonts: DM Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Config for Custom Colors/Fonts -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            DEFAULT: '#00D4AA', // teal-green accent
+                            hover: '#00b591',
+                            subtle: 'rgba(0, 212, 170, 0.1)',
+                            bg: '#0A0A0A',
+                            surface: '#121212',
+                            border: '#2A2A2A'
+                        },
+                        status: {
+                            success: '#22c55e',
+                            warning: '#eab308',
+                            danger: '#ef4444'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"DM Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace']
+                    },
+                    animation: {
+                        'fade-up': 'fadeUp 0.5s ease-out forwards',
+                        'spin-slow': 'spin 1.5s linear infinite',
+                    },
+                    keyframes: {
+                        fadeUp: {
+                            '0%': { opacity: '0', transform: 'translateY(15px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background-color: #0A0A0A;
+            color: #ffffff;
+            /* Smooth scrolling */
+            scroll-behavior: smooth;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0A0A0A;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2A2A2A;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3A3A3A;
+        }
+        
+        /* Input focus rings */
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #00D4AA;
+            box-shadow: 0 0 0 1px #00D4AA;
+        }
+        
+        /* SVG Ring CSS */
+        .score-ring-container {
+            position: relative;
+            width: 140px;
+            height: 140px;
+        }
+        
+        .score-svg {
+            transform: rotate(-90deg); /* Start from top */
+            width: 100%;
+            height: 100%;
+        }
+        
+        .score-bg {
+            fill: none;
+            stroke: #2A2A2A;
+            stroke-width: 8;
+        }
+        
+        .score-progress {
+            fill: none;
+            stroke: #00D4AA;
+            stroke-width: 8;
+            stroke-linecap: round;
+            /* Dash array will be set in JS (circumference = 2 * PI * r)
+               For r=60, circ = ~377 */
+            stroke-dasharray: 377;
+            stroke-dashoffset: 377; /* Set to circumference initially to hide */
+            transition: stroke-dashoffset 1.5s ease-out, stroke 1s ease-out;
+        }
+        
+        .score-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            font-weight: 700;
+        }
+        
+        /* Loading dot animation */
+        .loading-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: white;
+            border-left-color: white;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-brand selection:text-brand-bg">
+
+    <!-- Header / Nav -->
+    <header class="w-full px-4 py-6 md:px-12 md:py-10 flex items-baseline gap-3">
+        <h1 class="text-3xl md:text-5xl font-black tracking-tighter text-white">FITR <span class="text-brand">◈</span></h1>
+        <p class="text-brand font-medium tracking-wide text-sm md:text-base hidden sm:block">Internship Fit Engine</p>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow flex flex-col items-center justify-center px-4 w-full max-w-4xl mx-auto pb-20">
+        
+        <!-- PAGE 1: Input Screen -->
+        <section id="page-input" class="w-full animate-fade-up">
+            
+            <p class="text-brand font-medium tracking-wide text-sm mb-6 sm:hidden text-center">Internship Fit Engine</p>
+            
+            <div class="bg-brand-surface border border-brand-border rounded-2xl p-5 md:p-8 shadow-2xl">
+                
+                <form id="analysis-form" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full h-full">
+                        
+                        <!-- Left: GitHub URL -->
+                        <div class="flex flex-col gap-2 h-full">
+                            <label for="github_url" class="text-sm font-semibold text-gray-300 uppercase tracking-wider">GitHub Profile Url</label>
+                            <input type="url" id="github_url" name="github_url" required
+                                class="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-4 text-white placeholder-gray-600 transition-all font-mono text-sm md:text-base flex-grow focus:ring-1 focus:ring-brand focus:border-brand"
+                                placeholder="https://github.com/yourusername">
+                        </div>
+                        
+                        <!-- Right: Job Description -->
+                        <div class="flex flex-col gap-2 h-full">
+                            <label for="jd_text" class="text-sm font-semibold text-gray-300 uppercase tracking-wider">Job Description</label>
+                            <textarea id="jd_text" name="jd_text" required
+                                class="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-4 text-white placeholder-gray-600 transition-all text-sm md:text-base resize-y flex-grow min-h-[160px] focus:ring-1 focus:ring-brand focus:border-brand"
+                                placeholder="Paste the full job description here..."></textarea>
+                        </div>
+                        
+                    </div>
+                
+                    <div class="pt-6 flex flex-col items-center mt-2 border-t border-brand-border">
+                        <!-- Analyze Button -->
+                        <button type="submit" id="btn-submit" 
+                            class="w-full md:w-3/4 mx-auto bg-brand hover:bg-brand-hover text-brand-bg font-bold py-4 px-8 rounded-xl text-lg transition-colors flex justify-center items-center shadow-[0_0_20px_rgba(0,212,170,0.3)] hover:shadow-[0_0_30px_rgba(0,212,170,0.5)] disabled:opacity-70 disabled:cursor-not-allowed">
+                            Analyse Fit &rarr;
+                        </button>
+                        
+                        <!-- Loading State (hidden initially) -->
+                        <div id="loading-state" class="hidden flex flex-col items-center mt-4">
+                            <p class="text-gray-400 text-sm tracking-wide flex items-center gap-2">
+                                Reading your GitHub repos...
+                            </p>
+                        </div>
+                        
+                        <!-- Error Message (hidden initially) -->
+                        <div id="error-message" class="hidden mt-4 text-center">
+                            <p class="text-status-danger font-medium text-sm">Something went wrong.</p>
+                            <button type="button" id="btn-demo" class="text-brand hover:text-white underline text-sm transition-colors mt-1">Try the demo &rarr;</button>
+                        </div>
+                        
+                        <p class="text-xs text-gray-500 mt-6 md:mt-4 text-center">This reads your code, not your resume.</p>
+                        <!-- Hidden Demo Trigger -->
+                        <div class="absolute bottom-2 right-4">
+                            <button type="button" id="hidden-demo-trigger" class="text-[8px] text-[#1a1a1a] opacity-50 hover:opacity-100 hover:text-brand transition-colors cursor-pointer select-none">demo mode</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+
+        <!-- PAGE 2: Results Screen -->
+        <section id="page-results" class="w-full hidden opacity-0 transition-opacity duration-500">
+            
+            <div class="w-full flex justify-between items-center mb-6 md:mb-8">
+                <button id="btn-back" class="text-gray-400 hover:text-white flex items-center gap-2 transition-colors font-medium text-sm md:text-base">
+                    &larr; <span class="border-b border-transparent hover:border-white transition-colors">New Analysis</span>
+                </button>
+            </div>
+            
+            <!-- Result Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6 w-full">
+                
+                <!-- TOP CARD: Ring & Recommendation -->
+                <div class="col-span-1 md:col-span-12 bg-brand-surface border border-brand-border rounded-2xl p-6 md:p-8 shadow-2xl flex flex-col md:flex-row items-center justify-center gap-6 md:gap-16">
+                    
+                    <div class="flex flex-col items-center">
+                        <div class="text-xs md:text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Overall Fit</div>
+                        
+                        <!-- SVG Ring implementation instead of CSS conic-gradient trick layer -->
+                        <div class="score-ring-container">
+                            <svg class="score-svg" viewBox="0 0 140 140">
+                                <circle class="score-bg" cx="70" cy="70" r="60"></circle>
+                                <circle id="ui-progress-ring" class="score-progress" cx="70" cy="70" r="60"></circle>
+                            </svg>
+                            <span class="score-value" id="ui-fit-score">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col items-center md:items-start text-center md:text-left mt-4 md:mt-0">
+                        <div class="text-xs md:text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2">Recommendation</div>
+                        <h2 id="ui-recommendation" class="text-xl sm:text-2xl md:text-3xl font-bold mb-2 md:mb-3">&nbsp;</h2>
+                        <div id="ui-role-summary" class="text-sm md:text-base text-gray-400 max-w-md">&nbsp;</div>
+                    </div>
+                </div>
+                
+                <!-- MIDDLE LEFT: Skills Matching -->
+                <div class="col-span-1 md:col-span-8 bg-brand-surface border border-brand-border rounded-2xl p-5 md:p-6 shadow-xl flex flex-col h-full">
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 h-full">
+                        
+                        <!-- You Have -->
+                        <div class="flex flex-col h-full bg-[#1A1A1A] rounded-xl p-4 md:p-5 border border-[#333]">
+                            <h3 class="text-status-success font-semibold flex items-center gap-2 mb-4 text-sm md:text-base">
+                                <span class="bg-status-success/20 text-status-success rounded-full w-5 h-5 flex items-center justify-center text-xs">✓</span> You Have
+                            </h3>
+                            <div id="ui-hard-matched" class="flex flex-wrap gap-2">
+                                <!-- Pills injected via JS -->
+                            </div>
+                        </div>
+                        
+                        <!-- You're Missing -->
+                        <div class="flex flex-col h-full bg-[#1A1A1A] rounded-xl p-4 md:p-5 border border-[#333]">
+                            <h3 class="text-status-danger font-semibold flex items-center gap-2 mb-4 text-sm md:text-base">
+                                <span class="bg-status-danger/20 text-status-danger rounded-full w-5 h-5 flex items-center justify-center text-xs">✗</span> You're Missing
+                            </h3>
+                            <div id="ui-hard-missing" class="flex flex-wrap gap-2">
+                                <!-- Pills injected via JS -->
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+                <!-- MIDDLE RIGHT: Legitimacy -->
+                <div class="col-span-1 md:col-span-4 bg-brand-surface border border-brand-border rounded-2xl p-5 md:p-6 shadow-xl flex flex-col h-full">
+                    <div class="text-xs md:text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Legitimacy Check</div>
+                    
+                    <div class="flex items-end gap-2 mb-2">
+                        <span id="ui-legit-score" class="text-3xl md:text-4xl font-bold">100</span>
+                        <span class="text-gray-500 mb-1 text-sm md:text-base">/100</span>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-brand-bg rounded-full h-2 md:h-3 mb-4 overflow-hidden border border-brand-border">
+                        <div id="ui-legit-bar" class="bg-status-success h-full rounded-full transition-all duration-1000" style="width: 100%"></div>
+                    </div>
+                    
+                    <div id="ui-legit-label" class="inline-block px-2 py-1 md:px-3 md:py-1 rounded-md text-xs md:text-sm font-bold bg-status-success/20 text-status-success mb-4 w-fit">
+                        SAFE
+                    </div>
+                    
+                    <div id="ui-red-flags-container" class="hidden flex-grow bg-status-danger/10 border border-status-danger/20 rounded-lg p-3 md:p-4 mt-auto">
+                        <p class="text-[10px] md:text-xs text-status-danger font-semibold mb-2 uppercase">Red Flags Detected:</p>
+                        <ul id="ui-red-flags-list" class="list-disc list-inside text-xs md:text-sm text-gray-300 space-y-1">
+                            <!-- Li injected here -->
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- BOTTOM FULL WIDTH: Cover Letter -->
+                <div class="col-span-1 md:col-span-12 bg-brand-surface border border-brand-border rounded-2xl p-5 md:p-6 shadow-xl animate-fade-up" style="animation-delay: 0.2s;">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-white flex items-center gap-2 text-sm md:text-base">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-brand"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                            Generated Cover Letter
+                        </h3>
+                        <button id="btn-copy" class="text-[10px] md:text-xs font-mono bg-brand-bg border border-brand-border hover:border-brand px-2 py-1 md:px-3 md:py-1.5 rounded-md transition-colors flex items-center gap-1.5 group text-gray-300 hover:text-white">
+                            <span id="copy-text">Copy</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:text-brand transition-colors"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                    </div>
+                    
+                    <div class="bg-[#0A0A0A] border border-[#2A2A2A] rounded-xl p-4 md:p-6 font-mono text-xs sm:text-sm md:text-base text-gray-300 leading-relaxed whitespace-pre-wrap relative overflow-x-auto" id="ui-cover-letter">
+                        <!-- Content goes here -->
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // DOM Elements
+        const pageInput = document.getElementById('page-input');
+        const pageResults = document.getElementById('page-results');
+        const form = document.getElementById('analysis-form');
+        const btnSubmit = document.getElementById('btn-submit');
+        const loadingState = document.getElementById('loading-state');
+        const errorMessage = document.getElementById('error-message');
+        const btnDemo = document.getElementById('btn-demo');
+        const btnBack = document.getElementById('btn-back');
+        const btnCopy = document.getElementById('btn-copy');
+        const copyText = document.getElementById('copy-text');
+        const hiddenDemoTrigger = document.getElementById('hidden-demo-trigger');
+        
+        // UI Elements for Data
+        const uiProgressRing = document.getElementById('ui-progress-ring');
+        const uiFitScore = document.getElementById('ui-fit-score');
+        const uiRecommendation = document.getElementById('ui-recommendation');
+        const uiRoleSummary = document.getElementById('ui-role-summary');
+        
+        const uiHardMatched = document.getElementById('ui-hard-matched');
+        const uiHardMissing = document.getElementById('ui-hard-missing');
+        
+        const uiLegitScore = document.getElementById('ui-legit-score');
+        const uiLegitBar = document.getElementById('ui-legit-bar');
+        const uiLegitLabel = document.getElementById('ui-legit-label');
+        const uiRedFlagsContainer = document.getElementById('ui-red-flags-container');
+        const uiRedFlagsList = document.getElementById('ui-red-flags-list');
+        
+        const uiCoverLetter = document.getElementById('ui-cover-letter');
+
+        // SVG Ring setup
+        // Circumference = 2 * PI * r = 2 * PI * 60 ~= 377
+        const CIRCUMFERENCE = 377;
+
+        // Form Submit Handler
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const githubUrl = document.getElementById('github_url').value;
+            const jdText = document.getElementById('jd_text').value;
+            
+            if (!githubUrl || !jdText) return;
+            
+            // UI Loading State (disables btn, changes text, shows explicit message/spinner)
+            btnSubmit.innerHTML = '<span class="loading-dot border-brand-bg"></span> Analysing...';
+            btnSubmit.disabled = true;
+            loadingState.classList.remove('hidden');
+            errorMessage.classList.add('hidden');
+            
+            try {
+                const response = await fetch('http://localhost:8000/full-analysis', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        github_url: githubUrl, 
+                        jd_text: jdText 
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok || data.error) {
+                    throw new Error(data.error || 'Server responded with an error');
+                }
+                
+                // Success: Hide Page 1, Show Page 2
+                pageInput.classList.add('hidden');
+                
+                pageResults.classList.remove('hidden');
+                // Small delay to allow display:block to apply before changing opacity for transition
+                setTimeout(() => {
+                    pageResults.classList.remove('opacity-0');
+                    pageResults.classList.add('animate-fade-up');
+                }, 50);
+                
+                populateResults(data);
+                
+            } catch (err) {
+                console.error("Analysis Failed:", err);
+                // Show Error block
+                errorMessage.classList.remove('hidden');
+            } finally {
+                // Reset styling for button
+                btnSubmit.innerHTML = 'Analyse Fit &rarr;';
+                btnSubmit.disabled = false;
+                loadingState.classList.add('hidden');
+            }
+        });
+
+        // Demo fallback mechanism (per constraints)
+        const triggerDemoFlow = async () => {
+            errorMessage.classList.add('hidden');
+            btnSubmit.innerHTML = '<span class="loading-dot border-brand-bg"></span> Running Demo...';
+            btnSubmit.disabled = true;
+            loadingState.classList.remove('hidden');
+            
+            try {
+                // As requested, posts to /demo
+                const response = await fetch('http://localhost:8000/demo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+                
+                pageInput.classList.add('hidden');
+                pageResults.classList.remove('hidden');
+                setTimeout(() => {
+                    pageResults.classList.remove('opacity-0');
+                    pageResults.classList.add('animate-fade-up');
+                }, 50);
+                
+                populateResults(data);
+            } catch (err) {
+                console.error("Demo failed:", err);
+                alert("The backend /demo route is unreachable or not implemented.");
+            } finally {
+                btnSubmit.innerHTML = 'Analyse Fit &rarr;';
+                btnSubmit.disabled = false;
+                loadingState.classList.add('hidden');
+            }
+        };
+
+        btnDemo.addEventListener('click', triggerDemoFlow);
+        
+        // Auto-fill and Trigger Demo Flow
+        const autoFillDemo = () => {
+            document.getElementById('github_url').value = "https://github.com/yourusername";
+            document.getElementById('jd_text').value = `Backend Engineering Intern (Python)
+    
+We are looking for a backend intern to join our core services team.
+
+Must have skills:
+- Python
+- FastAPI or Flask framework
+- Docker containers
+- Relational Databases (SQL/PostgreSQL)
+
+Nice to have:
+- Experience with AWS or cloud platforms
+- Knowledge of Kubernetes
+- Familiarity with NLP or AI tools
+
+Duration: 3 months
+Stipend: $3000/month
+Apply with your resume and portfolio. No portfolio fee required.`;
+            
+            // Wait a brief moment to let user see inputs were filled, then trigger
+            setTimeout(() => {
+                triggerDemoFlow();
+            }, 300);
+        };
+
+        // Hidden UI trigger 
+        hiddenDemoTrigger.addEventListener('click', autoFillDemo);
+
+        // Keyboard Shortcut: Ctrl + D or Cmd + D
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
+                e.preventDefault(); // Prevent native bookmark behavior
+                if (!pageInput.classList.contains('hidden')) {
+                    autoFillDemo();
+                }
+            }
+        });
+
+        // Back Button
+        btnBack.addEventListener('click', () => {
+            // Hide Page 2, Show Page 1
+            pageResults.classList.add('opacity-0');
+            pageResults.classList.remove('animate-fade-up');
+            
+            setTimeout(() => {
+                pageResults.classList.add('hidden');
+                pageInput.classList.remove('hidden');
+                
+                // Reset Ring & Counter
+                uiProgressRing.style.strokeDashoffset = CIRCUMFERENCE;
+                uiFitScore.innerText = '0';
+            }, 500);
+            
+            // clear form
+            form.reset();
+            errorMessage.classList.add('hidden');
+        });
+
+        // Copy Button using navigator.clipboard (per constraints)
+        btnCopy.addEventListener('click', async () => {
+            try {
+                const textToCopy = uiCoverLetter.innerText;
+                await navigator.clipboard.writeText(textToCopy);
+                
+                const originalText = copyText.innerText;
+                copyText.innerText = 'Copied!';
+                copyText.classList.add('text-brand');
+                btnCopy.classList.add('border-brand');
+                
+                setTimeout(() => {
+                    copyText.innerText = originalText;
+                    copyText.classList.remove('text-brand');
+                    btnCopy.classList.remove('border-brand');
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy!', err);
+                alert("Failed to copy cover letter.");
+            }
+        });
+
+        // Function to bind data to UI
+        function populateResults(data) {
+            const fit = data.fit_analysis;
+            const jd = data.jd_analysis;
+            
+            // 1. TOP RING (proper SVG stroke-dashoffset animation)
+            const fitScore = fit.fit_score || 0;
+            uiFitScore.innerText = '0';
+            
+            // Reset dash offset before animating
+            uiProgressRing.style.strokeDashoffset = CIRCUMFERENCE;
+            
+            // Determine ring color based on score
+            let ringColor = '#ef4444'; // Red (Danger)
+            let textColor = 'text-status-danger';
+            
+            if (fitScore >= 70) {
+                ringColor = '#22c55e'; // Green (Success/Yes)
+                textColor = 'text-status-success';
+            } else if (fitScore >= 50) {
+                ringColor = '#eab308'; // Yellow (Warning/Borderline)
+                textColor = 'text-status-warning';
+            }
+            
+            uiRecommendation.className = `text-xl sm:text-2xl md:text-3xl font-bold mb-2 md:mb-3 ${textColor}`;
+            uiRecommendation.innerText = fit.recommendation || "Unknown";
+            uiRoleSummary.innerText = jd.role_summary || "Job description analysis complete.";
+            
+            // Animate SVG Ring & Counter
+            setTimeout(() => {
+                uiProgressRing.style.stroke = ringColor;
+                
+                // Calculate stroke offset: 
+                // offset = circumference - (percent / 100) * circumference
+                const offset = CIRCUMFERENCE - (fitScore / 100) * CIRCUMFERENCE;
+                uiProgressRing.style.strokeDashoffset = offset;
+                
+                // Count up effect for center number
+                let startTimestamp = null;
+                const duration = 1500; // 1.5s match SVG CSS transition
+                
+                const step = (timestamp) => {
+                    if (!startTimestamp) startTimestamp = timestamp;
+                    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                    
+                    // Bezier ease-out approximation for smoother count
+                    const easeOut = 1 - Math.pow(1 - progress, 3);
+                    uiFitScore.innerText = Math.floor(easeOut * fitScore);
+                    
+                    if (progress < 1) {
+                        window.requestAnimationFrame(step);
+                    }
+                };
+                window.requestAnimationFrame(step);
+                
+            }, 300); // Wait for fade-in transition
+            
+            
+            // 2. SKILLS PILLS
+            // Render "You Have"
+            uiHardMatched.innerHTML = '';
+            const matched = fit.hard_matched || [];
+            if (matched.length === 0) {
+                uiHardMatched.innerHTML = '<span class="text-gray-500 text-xs italic">No direct matches found.</span>';
+            } else {
+                matched.forEach(skill => {
+                    const span = document.createElement('span');
+                    span.className = 'px-2 py-1 md:px-3 md:py-1 bg-status-success/10 border border-status-success/30 text-status-success rounded-full text-[10px] md:text-xs font-mono lowercase tracking-wide';
+                    span.innerText = skill;
+                    uiHardMatched.appendChild(span);
+                });
+            }
+            
+            // Render "You're Missing"
+            uiHardMissing.innerHTML = '';
+            const missing = fit.hard_missing || [];
+            if (missing.length === 0) {
+                uiHardMissing.innerHTML = '<span class="text-gray-500 text-xs italic">None! You hit all marked hard skills.</span>';
+            } else {
+                missing.forEach(skill => {
+                    const span = document.createElement('span');
+                    span.className = 'px-2 py-1 md:px-3 md:py-1 bg-status-danger/10 border border-status-danger/30 text-status-danger rounded-full text-[10px] md:text-xs font-mono lowercase tracking-wide';
+                    span.innerText = skill;
+                    uiHardMissing.appendChild(span);
+                });
+            }
+            
+            
+            // 3. LEGITIMACY
+            const legitScore = jd.legitimacy_score || 0;
+            uiLegitScore.innerText = 0; // count from 0
+            
+            // Simple fast counter for legitimacy score
+            let legitFrames = 0;
+            const cntId = setInterval(() => {
+                if(legitFrames >= legitScore) {
+                    uiLegitScore.innerText = legitScore;
+                    clearInterval(cntId);
+                } else {
+                    legitFrames += 5;
+                    uiLegitScore.innerText = Math.min(legitFrames, legitScore);
+                }
+            }, 20);
+            
+            setTimeout(() => {
+                uiLegitBar.style.width = `${legitScore}%`;
+            }, 500);
+            
+            let legitBg = 'bg-status-danger';
+            let labelClass = 'bg-status-danger/20 text-status-danger';
+            let labelHtml = '✕ AVOID';
+            
+            if (legitScore >= 80) {
+                legitBg = 'bg-status-success';
+                labelClass = 'bg-status-success/20 text-status-success';
+                labelHtml = 'SAFE';
+            } else if (legitScore >= 50) {
+                legitBg = 'bg-status-warning';
+                labelClass = 'bg-status-warning/20 text-status-warning';
+                labelHtml = '⚠ SUSPICIOUS';
+            }
+            
+            uiLegitBar.className = `${legitBg} h-full rounded-full transition-all duration-1000`;
+            uiLegitLabel.className = `inline-block px-2 py-1 md:px-3 md:py-1 rounded-md text-xs md:text-sm font-bold w-fit mb-4 ${labelClass}`;
+            uiLegitLabel.innerHTML = labelHtml;
+            
+            // Red Flags
+            const flags = jd.red_flags || [];
+            if (flags.length > 0) {
+                uiRedFlagsContainer.classList.remove('hidden');
+                uiRedFlagsList.innerHTML = '';
+                flags.forEach(flag => {
+                    const li = document.createElement('li');
+                    li.innerText = `Detected mention of: "${flag}"`;
+                    uiRedFlagsList.appendChild(li);
+                });
+            } else {
+                uiRedFlagsContainer.classList.add('hidden');
+            }
+            
+            // 4. COVER LETTER
+            const coverText = fit.cover_letter || "Could not generate cover letter.";
+            uiCoverLetter.innerText = coverText;
+        }
+
+    </script>
+</body>
+</html>
