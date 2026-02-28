@@ -271,6 +271,13 @@
                                 <!-- Pills injected via JS -->
                             </div>
                             
+                            <!-- Coursera CTA Container -->
+                            <div id="ui-coursera-cta" class="hidden mt-2 mb-4">
+                                <a id="ui-coursera-link" href="#" target="_blank" class="inline-flex items-center text-xs md:text-sm text-brand hover:text-white transition-colors gap-1 border border-brand/30 bg-brand/10 hover:bg-brand/20 px-3 py-1.5 rounded-lg">
+                                    📚 Find Courses on Coursera &rarr;
+                                </a>
+                            </div>
+                            
                             <!-- Quick Wins / Learnable in 2 weeks -->
                             <div id="ui-quick-wins-container" class="hidden mt-auto border-t border-[#333] pt-4">
                                 <h4 class="text-status-warning font-semibold flex items-center gap-2 mb-3 text-xs md:text-sm tracking-wide">
@@ -356,6 +363,8 @@
         
         const uiHardMatched = document.getElementById('ui-hard-matched');
         const uiHardMissing = document.getElementById('ui-hard-missing');
+        const uiCourseraCta = document.getElementById('ui-coursera-cta');
+        const uiCourseraLink = document.getElementById('ui-coursera-link');
         const uiQuickWinsContainer = document.getElementById('ui-quick-wins-container');
         const uiQuickMissing = document.getElementById('ui-quick-missing');
         
@@ -621,6 +630,7 @@ Apply with your resume and portfolio. No portfolio fee required.`;
             
             // Render "You're Missing"
             uiHardMissing.innerHTML = '';
+            uiCourseraCta.classList.add('hidden');
             const quickMissing = fit.quick_learn_missing || [];
             const missing = (fit.hard_missing || []).filter(skill => !quickMissing.includes(skill));
             
@@ -628,11 +638,17 @@ Apply with your resume and portfolio. No portfolio fee required.`;
                 uiHardMissing.innerHTML = '<span class="text-gray-500 text-xs italic">None! You hit all marked hard skills.</span>';
             } else if (missing.length > 0) {
                 missing.forEach(skill => {
-                    const span = document.createElement('span');
-                    span.className = 'px-2 py-1 md:px-3 md:py-1 bg-status-danger/10 border border-status-danger/30 text-status-danger rounded-full text-[10px] md:text-xs font-mono lowercase tracking-wide';
-                    span.innerText = skill;
-                    uiHardMissing.appendChild(span);
+                    const a = document.createElement('a');
+                    const encodedSkill = encodeURIComponent(`learn ${skill} for beginners`);
+                    a.href = `https://www.youtube.com/results?search_query=${encodedSkill}`;
+                    a.target = "_blank";
+                    a.className = 'px-2 py-1 md:px-3 md:py-1 bg-status-danger/10 border border-status-danger/30 text-status-danger rounded-full text-[10px] md:text-xs font-mono lowercase tracking-wide cursor-pointer hover:underline hover:bg-status-danger/20 transition-all flex items-center gap-1';
+                    a.innerHTML = `<span>${skill}</span> <span class="opacity-70 ml-1">🎯 Learn</span>`;
+                    uiHardMissing.appendChild(a);
                 });
+                // Update Coursera link based on the first missing skill
+                uiCourseraCta.classList.remove('hidden');
+                uiCourseraLink.href = `https://www.coursera.org/search?query=${encodeURIComponent(missing[0])}`;
             } else {
                  uiHardMissing.innerHTML = '<span class="text-gray-500 text-xs italic">Only quick-learn skills missing!</span>';
             }
