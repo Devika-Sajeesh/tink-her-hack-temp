@@ -1,12 +1,13 @@
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, Form, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from github_ingestor import get_competency_map
 from jd_analyser import analyse_jd
 from fit_scorer import calculate_fit
-from cover_letter_generator import generate_cover_letter
-from typing import Dict, List, Any
+from copy import deepcopy
+from resume_parser import extract_resume_skills
+from typing import Dict, List, Any, Optional
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -91,18 +92,32 @@ async def fit_route(request: FitRequest):
         return {"error": str(e)}
 
 @app.post("/full-analysis")
-async def full_analysis_route(request: FullAnalysisRequest):
+async def full_analysis_route(
+    github_url: str = Form(...),
+    jd_text: str = Form(...),
+    resume: Optional[UploadFile] = File(None)
+):
     """
-    Accepts {github_url: str, jd_text: str} and runs the full pipeline.
+    Accepts Form[github_url, jd_text] and optional File[resume] and runs the full pipeline.
     """
     try:
         # 1. Ingest GitHub profile
-        competency_map = get_competency_map(request.github_url)
+        competency_map = get_competency_map(github_url)
         if "error" in competency_map:
             return {"error": f"GitHub extraction failed: {competency_map['error']}"}
+
+        # 2. Extract and Merge Resume Skills (if provided)
+        if resume:
+            pdf_bytes = await resume.read()
+            resume_skills = extract_resume_skills(pdf_bytes)
+            for skill in resume_skills:
+                if skill not in competency_map:
+                    competency_map[skill] = 0.85
+                else:
+                    competency_map[skill] = min(1.0, competency_map[skill] + 0.1)
         
-        # 2. Analyse Job Description
-        jd_analysis = analyse_jd(request.jd_text)
+        # 3. Analyse Job Description
+        jd_analysis = analyse_jd(jd_text)
         if "error" in jd_analysis:
             return {"error": f"JD analysis failed: {jd_analysis['error']}"}
             
@@ -113,7 +128,7 @@ async def full_analysis_route(request: FullAnalysisRequest):
             fit_result=fit_result,
             competency_map=competency_map,
             role_summary=jd_analysis.get('role_summary', 'open role'),
-            github_url=request.github_url
+            github_url=github_url
         )
         
         fit_result["cover_letter"] = cover_letter

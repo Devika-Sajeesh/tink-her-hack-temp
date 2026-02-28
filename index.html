@@ -163,12 +163,31 @@
                 <form id="analysis-form" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full h-full">
                         
-                        <!-- Left: GitHub URL -->
-                        <div class="flex flex-col gap-2 h-full">
-                            <label for="github_url" class="text-sm font-semibold text-gray-300 uppercase tracking-wider">GitHub Profile Url</label>
-                            <input type="url" id="github_url" name="github_url" required
-                                class="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-4 text-white placeholder-gray-600 transition-all font-mono text-sm md:text-base flex-grow focus:ring-1 focus:ring-brand focus:border-brand"
-                                placeholder="https://github.com/yourusername">
+                        <!-- Left: GitHub URL & Resume -->
+                        <div class="flex flex-col gap-6 h-full">
+                            <!-- GitHub URL -->
+                            <div class="flex flex-col gap-2">
+                                <label for="github_url" class="text-sm font-semibold text-gray-300 uppercase tracking-wider">GitHub Profile Url</label>
+                                <input type="url" id="github_url" name="github_url" required
+                                    class="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-4 text-white placeholder-gray-600 transition-all font-mono text-sm md:text-base focus:ring-1 focus:ring-brand focus:border-brand"
+                                    placeholder="https://github.com/yourusername">
+                            </div>
+                            
+                            <!-- Resume Upload (Optional) -->
+                            <div class="flex flex-col gap-2 flex-grow">
+                                <label for="resume_file" class="text-sm font-semibold text-gray-300 uppercase tracking-wider flex items-center justify-between">
+                                    <span>📄 Upload Resume</span>
+                                    <span class="text-brand text-xs lowercase font-normal border border-brand/30 bg-brand/10 px-2 py-0.5 rounded-md">Optional</span>
+                                </label>
+                                <div class="relative w-full h-full min-h-[100px] border-2 border-dashed border-brand-border hover:border-brand/60 bg-[#121212] rounded-xl flex flex-col items-center justify-center transition-colors group">
+                                    <input type="file" id="resume_file" name="resume" accept=".pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                                    <div class="text-center p-4">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-brand mx-auto mb-2 opacity-80 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+                                        <p class="text-sm text-gray-300 font-medium group-hover:text-brand transition-colors"><span id="file-name-display">Click to upload PDF</span></p>
+                                        <p class="text-[10px] text-gray-500 mt-1 uppercase tracking-wide">Adds resume skills to GitHub analysis</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         
                         <!-- Right: Job Description -->
@@ -396,15 +415,18 @@
             errorMessage.classList.add('hidden');
             
             try {
+                const resumeFile = document.getElementById('resume_file').files[0];
+                
+                const formData = new FormData();
+                formData.append('github_url', githubUrl);
+                formData.append('jd_text', jdText);
+                if (resumeFile) {
+                    formData.append('resume', resumeFile);
+                }
+
                 const response = await fetch('https://tink-her-hack-temp-1bfw.onrender.com/full-analysis', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ 
-                        github_url: githubUrl, 
-                        jd_text: jdText 
-                    })
+                    body: formData // No Content-Type header needed for FormData
                 });
                 
                 const data = await response.json();
@@ -502,6 +524,29 @@ Apply with your resume and portfolio. No portfolio fee required.`;
 
         // Hidden UI trigger 
         hiddenDemoTrigger.addEventListener('click', autoFillDemo);
+
+        // File input visual update
+        const resumeInput = document.getElementById('resume_file');
+        const fileNameDisplay = document.getElementById('file-name-display');
+        
+        resumeInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                if (file.name.toLowerCase().endsWith('.pdf')) {
+                    fileNameDisplay.innerText = file.name;
+                    fileNameDisplay.classList.add('text-brand', 'font-semibold');
+                    fileNameDisplay.parentNode.previousElementSibling.classList.add('opacity-100'); // make SVG solid
+                } else {
+                    fileNameDisplay.innerText = 'Please select a PDF file';
+                    fileNameDisplay.classList.remove('text-brand', 'font-semibold');
+                    fileNameDisplay.classList.add('text-status-danger');
+                    e.target.value = ''; // clear invalid selection
+                }
+            } else {
+                fileNameDisplay.innerText = 'Click to upload PDF';
+                fileNameDisplay.classList.remove('text-brand', 'font-semibold', 'text-status-danger');
+            }
+        });
 
         // Keyboard Shortcut: Ctrl + D or Cmd + D
         document.addEventListener('keydown', (e) => {

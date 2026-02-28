@@ -256,7 +256,7 @@ final_score = hard_match + legitimacy  (max 100)
 [\[demo video link \]](https://www.loom.com/share/1f1ac03d824b4da3b98e8827e4e59b3e)
 
 ### Additional Demos
-- Live site: [https://devika-sajeesh.github.io/Fitr](https://devika-sajeesh.github.io/Fitr)
+- Live site: [https://tink-her-hack-temp-1bfw.onrender.com](https://tink-her-hack-temp-1bfw.onrender.com)
 - Backend API docs: `http://localhost:8000/docs` (run locally)
 
 ---
