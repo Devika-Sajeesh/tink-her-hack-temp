@@ -41,7 +41,7 @@ Fitr runs a 4-stage AI pipeline: it scrapes your public GitHub repositories to b
 
 - **GitHub-Native Skill Inference:** Analyses your actual repositories using language stats and dependency files — not your self-reported resume skills
 - **Intelligent JD Deconstruction:** LLM separates hard requirements from nice-to-haves and identifies skills learnable in under 2 weeks
-- **Weighted Fit Scoring:** Composite score (hard match 60% + soft match 25% + legitimacy 15%) with a clear YES / BORDERLINE / NO recommendation
+- **Weighted Fit Scoring:** Composite score (hard match 85% + legitimacy 15%) with a clear YES / BORDERLINE / NO recommendation
 - **Scam Detection:** Rule-based red flag engine checks for registration fees, vague deliverables, unpaid mandatory work, and 9 other patterns with a legitimacy score out of 100
 - **Personalised Cover Letter:** Groq LLM generates a 150-word cover letter citing your specific GitHub projects and addressing skill gaps proactively
 
@@ -132,11 +132,10 @@ GitHub URL + JD Text
 
 **Fit Scoring Formula:**
 ```
-hard_match  = (matched hard skills / total hard skills) × 60
-soft_match  = (matched nice-to-haves / total nice-to-haves) × 25
+hard_match  = (matched hard skills / total hard skills) × 85
 legitimacy  = legitimacy_score × 0.15
 
-final_score = hard_match + soft_match + legitimacy  (max 100)
+final_score = hard_match + legitimacy  (max 100)
 ```
 
 ---
@@ -183,7 +182,7 @@ final_score = hard_match + soft_match + legitimacy  (max 100)
 ```json
 {
   "hard_skills": ["Python", "FastAPI", "REST APIs"],
-  "nice_to_have": ["Docker", "AWS"],
+  "quick_learn_skills": ["Docker", "AWS"],
   "role_summary": "Backend Python developer internship",
   "stipend": "₹15,000/month",
   "red_flags": [],
@@ -199,7 +198,7 @@ final_score = hard_match + soft_match + legitimacy  (max 100)
 ```json
 {
   "competency_map": {"Python": 0.91, "backend": 0.82},
-  "jd_analysis": {"hard_skills": ["Python", "FastAPI"], "nice_to_have": ["Docker"], "legitimacy_score": 100}
+  "jd_analysis": {"hard_skills": ["Python", "FastAPI"], "quick_learn_skills": ["Docker"], "legitimacy_score": 100}
 }
 ```
 - **Response:**
@@ -207,8 +206,8 @@ final_score = hard_match + soft_match + legitimacy  (max 100)
 {
   "fit_score": 78,
   "hard_matched": ["Python", "FastAPI"],
-  "hard_missing": ["Docker"],
-  "soft_matched": [],
+  "hard_missing": [],
+  "quick_learn_missing": ["Docker"],
   "recommendation": "YES — Apply with confidence",
   "legitimacy_score": 100
 }
@@ -233,7 +232,8 @@ final_score = hard_match + soft_match + legitimacy  (max 100)
   "fit_result": {
     "fit_score": 78,
     "hard_matched": ["Python", "LLM"],
-    "hard_missing": ["Kubernetes"],
+    "hard_missing": [],
+    "quick_learn_missing": ["Kubernetes"],
     "recommendation": "YES — Apply with confidence",
     "legitimacy_score": 95
   },

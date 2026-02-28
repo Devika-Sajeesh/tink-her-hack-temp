@@ -28,21 +28,18 @@ def matches(skill: str, competency_map: Dict[str, float]) -> bool:
 
 def calculate_fit(competency_map: Dict[str, Any], jd_analysis: Dict[str, Any]) -> Dict[str, Any]:
     hard_skills: List[str] = jd_analysis.get('hard_skills', [])
-    nice_to_have: List[str] = jd_analysis.get('nice_to_have', [])
     quick_learn_skills: List[str] = jd_analysis.get('quick_learn_skills', [])
     legitimacy_score: int = jd_analysis.get('legitimacy_score', 0)
     
     hard_matched = [s for s in hard_skills if matches(s, competency_map)]
-    soft_matched = [s for s in nice_to_have if matches(s, competency_map)]
     
     hard_missing = [s for s in hard_skills if not matches(s, competency_map)]
     quick_learn_missing = [s for s in quick_learn_skills if not matches(s, competency_map)]
 
-    hard_score = (len(hard_matched) / max(len(hard_skills), 1)) * 60
-    soft_score = (len(soft_matched) / max(len(nice_to_have), 1)) * 25
+    hard_score = (len(hard_matched) / max(len(hard_skills), 1)) * 85
     legit_score = legitimacy_score * 0.15
 
-    fit_score = round(hard_score + soft_score + legit_score)
+    fit_score = round(hard_score + legit_score)
     
     if fit_score >= 70:
         recommendation = "YES — Apply with confidence"
@@ -56,7 +53,6 @@ def calculate_fit(competency_map: Dict[str, Any], jd_analysis: Dict[str, Any]) -
         "hard_matched": hard_matched,
         "hard_missing": hard_missing,
         "quick_learn_missing": quick_learn_missing,
-        "soft_matched": soft_matched,
         "recommendation": recommendation,
         "legitimacy_score": legitimacy_score
     }

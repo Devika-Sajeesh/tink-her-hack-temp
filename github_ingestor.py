@@ -4,14 +4,112 @@ from typing import Dict, Any, List, Tuple, Set, Iterable
 from github import Github, GithubException
 
 PACKAGE_SKILL_MAP = {
+    # Backend
     'fastapi': 'backend', 'flask': 'backend', 'django': 'backend',
-    'requests': 'backend', 'aiohttp': 'backend',
+    'djangorestframework': 'backend', 'starlette': 'backend',
+    'requests': 'backend', 'aiohttp': 'backend', 'httpx': 'backend',
+    'uvicorn': 'backend', 'gunicorn': 'backend', 'tornado': 'backend',
+    'bottle': 'backend', 'sanic': 'backend', 'falcon': 'backend',
+    'pydantic': 'backend', 'sqlalchemy': 'backend', 'alembic': 'backend',
+    'celery': 'backend', 'redis': 'backend', 'pymongo': 'backend',
+    'psycopg2': 'backend', 'asyncpg': 'backend', 'motor': 'backend',
+
+    # Frontend
+    'react': 'frontend', 'vue': 'frontend', 'angular': 'frontend',
+    'svelte': 'frontend', 'nextjs': 'frontend', 'nuxtjs': 'frontend',
+    'tailwindcss': 'frontend', 'bootstrap': 'frontend',
+    'webpack': 'frontend', 'vite': 'frontend', 'parcel': 'frontend',
+    'axios': 'frontend', 'jquery': 'frontend',
+
+    # NLP
     'transformers': 'nlp', 'spacy': 'nlp', 'nltk': 'nlp',
-    'opencv-python': 'computer-vision', 
-    'torch': 'deep-learning', 'tensorflow': 'deep-learning', 
-    'react': 'frontend',
+    'gensim': 'nlp', 'textblob': 'nlp', 'sentence-transformers': 'nlp',
+    'tokenizers': 'nlp', 'datasets': 'nlp', 'evaluate': 'nlp',
+    'huggingface-hub': 'nlp', 'bert': 'nlp', 'flair': 'nlp',
+    'stanza': 'nlp', 'allennlp': 'nlp', 'fasttext': 'nlp',
+
+    # Computer Vision
+    'opencv-python': 'computer-vision', 'cv2': 'computer-vision',
+    'pillow': 'computer-vision', 'scikit-image': 'computer-vision',
+    'imageio': 'computer-vision', 'albumentations': 'computer-vision',
+    'torchvision': 'computer-vision', 'detectron2': 'computer-vision',
+    'mediapipe': 'computer-vision', 'pytesseract': 'computer-vision',
+    'easyocr': 'computer-vision', 'ultralytics': 'computer-vision',
+    'imgaug': 'computer-vision', 'mahotas': 'computer-vision',
+
+    # Deep Learning
+    'torch': 'deep-learning', 'tensorflow': 'deep-learning',
+    'keras': 'deep-learning', 'jax': 'deep-learning',
+    'flax': 'deep-learning', 'paddle': 'deep-learning',
+    'mxnet': 'deep-learning', 'caffe': 'deep-learning',
+    'lightning': 'deep-learning', 'pytorch-lightning': 'deep-learning',
+    'timm': 'deep-learning', 'einops': 'deep-learning',
+    'onnx': 'deep-learning', 'onnxruntime': 'deep-learning',
+    'tensorboard': 'deep-learning', 'wandb': 'deep-learning',
+
+    # ML
+    'scikit-learn': 'ml', 'numpy': 'ml', 'pandas': 'ml',
+    'scipy': 'ml', 'statsmodels': 'ml', 'xgboost': 'ml',
+    'lightgbm': 'ml', 'catboost': 'ml', 'optuna': 'ml',
+    'mlflow': 'ml', 'joblib': 'ml', 'imbalanced-learn': 'ml',
+    'shap': 'ml', 'lime': 'ml', 'yellowbrick': 'ml',
+    'feature-engine': 'ml', 'boruta': 'ml', 'eli5': 'ml',
+
+    # LLM / Agents
     'langchain': 'llm-agents', 'openai': 'llm-agents',
-    'scikit-learn': 'ml', 'numpy': 'ml', 'pandas': 'ml'
+    'langchain-core': 'llm-agents', 'langchain-community': 'llm-agents',
+    'langchain-groq': 'llm-agents', 'langchain-google-genai': 'llm-agents',
+    'langchain-openai': 'llm-agents', 'langgraph': 'llm-agents',
+    'llama-index': 'llm-agents', 'llama-cpp-python': 'llm-agents',
+    'anthropic': 'llm-agents', 'groq': 'llm-agents',
+    'google-generativeai': 'llm-agents', 'cohere': 'llm-agents',
+    'guidance': 'llm-agents', 'outlines': 'llm-agents',
+    'instructor': 'llm-agents', 'dspy': 'llm-agents',
+    'autogen': 'llm-agents', 'crewai': 'llm-agents',
+    'semantic-kernel': 'llm-agents', 'haystack': 'llm-agents',
+
+    # Cloud / DevOps
+    'boto3': 'cloud', 'azure-sdk': 'cloud', 'google-cloud': 'cloud',
+    'google-cloud-storage': 'cloud', 'google-cloud-bigquery': 'cloud',
+    'azure-storage-blob': 'cloud', 'paramiko': 'cloud',
+    'docker': 'devops', 'kubernetes': 'devops', 'ansible': 'devops',
+    'terraform': 'devops', 'pulumi': 'devops',
+    'github-actions': 'devops', 'fabric': 'devops',
+
+    # Data Engineering
+    'apache-airflow': 'data-engineering', 'airflow': 'data-engineering',
+    'pyspark': 'data-engineering', 'dask': 'data-engineering',
+    'prefect': 'data-engineering', 'dagster': 'data-engineering',
+    'great-expectations': 'data-engineering', 'dbt': 'data-engineering',
+    'kafka-python': 'data-engineering', 'confluent-kafka': 'data-engineering',
+    'pyarrow': 'data-engineering', 'polars': 'data-engineering',
+
+    # Data Visualisation
+    'matplotlib': 'data-viz', 'seaborn': 'data-viz',
+    'plotly': 'data-viz', 'bokeh': 'data-viz',
+    'altair': 'data-viz', 'dash': 'data-viz',
+    'streamlit': 'data-viz', 'gradio': 'data-viz',
+
+    # Mobile
+    'kivy': 'mobile', 'kivymd': 'mobile',
+    'flutter': 'mobile', 'react-native': 'mobile',
+
+    # Desktop / GUI
+    'pyqt5': 'desktop', 'pyqt6': 'desktop', 'pyside6': 'desktop',
+    'tkinter': 'desktop', 'wxpython': 'desktop', 'pygame': 'desktop',
+    'pyglet': 'desktop', 'customtkinter': 'desktop',
+
+    # Security / Scraping
+    'scrapy': 'scraping', 'beautifulsoup4': 'scraping',
+    'selenium': 'scraping', 'playwright': 'scraping',
+    'mechanize': 'scraping', 'httplib2': 'scraping',
+    'cryptography': 'security', 'pyjwt': 'security',
+    'passlib': 'security', 'python-jose': 'security',
+
+    # Testing
+    'pytest': 'testing', 'unittest': 'testing',
+    'hypothesis': 'testing', 'faker': 'testing',
+    'coverage': 'testing', 'tox': 'testing',
 }
 
 def extract_username(url: str) -> str:
