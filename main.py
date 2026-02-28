@@ -18,9 +18,9 @@ app = FastAPI(title="Fitr API")
 # Configure CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust this to specific domains in production
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=False, # Must be False if allow_origins is ["*"]
+    allow_methods=["GET", "POST", "OPTIONS"], # Explicitly allow preflight OPTIONS used by FormData
     allow_headers=["*"],
 )
 
